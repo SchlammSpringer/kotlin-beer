@@ -4,7 +4,7 @@ GET http://localhost:8080/beers
 
 ### find single beer
 
-GET http://localhost:8080/beers/64872cdbe3fc105cceba0851
+GET http://localhost:8080/beers/6615b206cbf537050fef2a4a
 
 ### create a new beer
 
@@ -23,7 +23,7 @@ DELETE http://localhost:8080/beers/64872cdbe3fc105cceba0851
 
 ### update a beer
 
-PUT http://localhost:8080/beers/64872cdbe3fc105cceba0851
+PUT http://localhost:8080/beers/6615b206cbf537050fef2a4a
 Content-Type: application/json
 
 {

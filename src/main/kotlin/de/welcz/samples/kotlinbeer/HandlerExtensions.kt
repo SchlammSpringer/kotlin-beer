@@ -17,7 +17,7 @@ private suspend fun RequestError.responseError(): ServerResponse {
   handlerExtLogger.warn { this }
   return when (this) {
     ResourceNotFound -> responseNoContent()
-    InvalidObjectId, InvalidBody -> ServerResponse.badRequest().bodyValueAndAwait(message)
+    InvalidObjectId, InvalidBody -> ServerResponse.badRequest().bodyValueAndAwait(this)
   }
 }
 
@@ -27,16 +27,19 @@ suspend fun HasId.responseCreated(rootUrl: String) =
   ServerResponse.created(URI("$rootUrl/$id")).bodyValueAndAwait(this)
 
 suspend fun responseNoContent() = ServerResponse.noContent().buildAndAwait()
-fun ServerRequest.objectId() = Either.catch { ObjectId(pathVariable("id")) }.mapLeft { InvalidObjectId }
-suspend inline fun <reified T : Any> ServerRequest.bodyJson(): Either<InvalidBody, T> =
-  Either
+fun ServerRequest.objectId() = Either
+  .catch { ObjectId(pathVariable("id")) }
+  .mapLeft { InvalidObjectId }
+
+suspend inline fun <reified T : Any> ServerRequest.bodyJson(): Either<InvalidBody, T> {
+  return Either
     .catch { awaitBody<T>() }
     .onLeft { handlerExtLogger.error(it) { "failed to deserialize body" } }
     .mapLeft { InvalidBody }
-
-sealed class RequestError(val message: String) {
-  override fun toString() = message
 }
-object InvalidBody : RequestError("the given body is invalid")
-object InvalidObjectId : RequestError("the given id is invalid")
-object ResourceNotFound : RequestError("the requested resource was not found")
+
+sealed class RequestError(@Suppress("unused") val message: String)
+
+data object InvalidBody : RequestError("the given body is invalid")
+data object InvalidObjectId : RequestError("the given id is invalid")
+data object ResourceNotFound : RequestError("the requested resource was not found")
